@@ -1,0 +1,4 @@
+## My copy of trip software package
+Add PsiDO package, the kernel is adapted from Rami Nammour's code.
+Implemented the kernel as a RVL operator called PsiDiffOp
+which is also parellelized along shots. 
