@@ -1,0 +1,125 @@
+#include "PsiDO.h"
+
+void PsiDO(complex const  *U ,complex const *FQ,complex *QU ,int nx, int nz, int k, double dx,double dz,double m_ord){
+
+  const double pi = 3.14159265358979323846;
+
+  fftw_complex *in,*FU,*FR,*R;
+  fftw_plan plan_forward,plan_backward;
+  //reinterpret_cast<fftw_complex*>(U);
+
+  //in= (fftw_complex *) fftw_malloc(nx*nz*sizeof(fftw_complex));
+  FU=(fftw_complex *) fftw_malloc(nx*nz*sizeof(fftw_complex));
+  FR= (fftw_complex *) fftw_malloc(nx*nz*sizeof(fftw_complex));
+  R=(fftw_complex *) fftw_malloc(nx*nz*sizeof(fftw_complex));
+
+  plan_forward = fftw_plan_dft_2d(nx,nz,U,FU,FFTW_FORWARD,FFTW_ESTIMATE);
+  plan_backward= fftw_plan_dft_2d(nx,nz,FR,R,FFTW_BACKWARD,FFTW_ESTIMATE);
+
+  /* reinterpret_cast <fftw_complex*>(U) may work here try it */
+
+  int m,n,l,p,r;
+  /* works if I pass U directly
+  for( m=0;m<nx;m++)
+    {
+      for(n=0;n<nz;n++)
+	{
+	  in[m*nz+n]=U[m*nz+n];
+       
+	}
+    }
+  */
+
+
+  
+
+  fftw_execute(plan_forward);
+
+ 
+
+  double X = (nx-1)*dx;
+  double Z= (nz-1)*dz;
+  double dxi = 1/X;
+  double deta =1/Z;
+  double xi,eta,omega;
+  // Assign QU using malloc so you don't have to do this here.
+  for(m=0;m<nx;m++)
+    {
+      for(n=0;n<nz;n++)
+	{
+	  QU[m*nz+n] = 0;
+	}
+    }
+
+  
+
+
+
+  for (l=-(k-1)/2;l<=(k-1)/2;l++)
+    {
+      for(p = -(nx-1)/2;p<= (nx-1)/2;p++)
+	{
+
+	  xi = 2*pi*dxi*p;
+	for(r = - (nz-1)/2; r <= (nz-1)/2; r++)
+	  {
+	    eta = 2*pi*deta*r;
+	    omega = pow((xi*xi+eta*eta),(0.5));
+	    
+	    if (p !=0 || r !=0)
+	      {
+		if( p >=0 && r >=0)
+		        FR[p*nz+r] = pow(omega,(m_ord-l))*cpow((xi+I*eta),l)*FU[p*nz+r];	
+		else if (p >=0 && r <0)
+		  
+			FR[p*nz+r+nz] = pow(omega,(m_ord-l))*cpow((xi+I*eta),l)*FU[p*nz+r+nz];
+	     
+		else if (p <0 && r >=0)
+		  
+			FR[(p+nx)*nz+r]= pow(omega,(m_ord-l))*cpow((xi+I*eta),l)*FU[(p+nx)*nz+r];
+		  
+		else
+		  
+			FR[(p+nx)*nz+r+nz]= pow(omega,(m_ord-l))*cpow((xi+I*eta),l)*FU[(p+nx)*nz+r+nz];
+       
+	      }
+	 
+	    else
+	      {
+		if(m_ord ==0)
+		FR[p*nz+r]= FU[p*nz+r];/*the singularity*/
+		else
+		  FR[p*nz+r]=0;
+	      }
+	    
+	  }
+	}
+     
+
+
+  
+      fftw_execute(plan_backward);
+
+    
+
+      for (m=0;m<nx;m++)
+	{
+	  for(n=0;n<nz;n++)
+	    {
+	      QU[m*nz+n]=QU[m*nz+n]+ FQ[(k-1)/2+l+k*(m*nz+n)]*R[m*nz+n]/(nx*nz);
+	    }
+	}
+
+    }
+
+  /*free memory */
+  fftw_destroy_plan ( plan_forward );
+  fftw_destroy_plan ( plan_backward );
+
+  //fftw_free ( in );
+  fftw_free ( FU );
+  fftw_free ( FR );
+  fftw_free(R);
+}
+
+

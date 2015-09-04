@@ -1,0 +1,89 @@
+//#include "../src/bicubic.h"
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stream.h>
+
+#include <complex.h>
+#include "fftw3.h"
+
+extern "C" { 
+
+void bicubic_(float& , float& , in & ,
+			 float&, float& , int&, 
+			 float*,
+			 float& , float& , int& , 
+			 float& , float&, int&, 
+			 float*,
+			 int&, float*,
+			  int&, int&);
+           }
+/*
+extern "C" { void bicubicadj_(float & o0in, float & d0in, int & n0in,
+			    float & o1in, float & d1in, int & n1in, 
+			    float * datain,
+			    float & o0out, float & d0out, int & n0out, 
+			    float & o1out, float & d1out, int & n1out, 
+			    float * dataout,
+			    int & iend, float * work,
+			      int & wl, int & ier);}
+*/
+
+int main(int argc, char **argv) {
+
+  float x1in=-5;
+  float dxin=0.1;
+  int nxin=101;
+
+  float y1in=-5;
+  float dyin=0.1;
+  int nyin=101;
+
+  float datain[nxin][nyin];
+
+  int m,n;
+  float x,z;
+
+ for (m=0;m<nxin;m++)
+   {
+     for (n=0;n<nyin;n++)
+       {
+	 x=x1in+m*dxin;
+	 z=y1in+n*dyin;
+
+	 datain[m][n]=1;
+       }
+   }
+
+ float x1out=-5;
+ float dxout=0.5;
+ int nxout=10;
+
+ float y1out=-5;
+ float dyout=0.5;
+ int nyout=10;
+
+ float zout[nxout][nyout];
+
+ int iend=1;
+
+ float * work;
+ int wl=6*nxin*nyin;
+
+ work = (float *)malloc(wl *sizeof(float));
+
+ int ierr;
+
+ bicubic_( & x1in, & dxin, & nxin,& y1in, & dyin, & nyin, & datain, & x1out, & dxout, & nxout, & y1out, & dyout, & nyout , & zout,& iend, work, & wl, & ierr);
+
+ for( m=0;m<nxout;m++)
+    {
+      for(n=0;n<nyout;n++)
+	{
+	  printf("%3.3f ",zout[m][n]);printf("   ");
+	}
+	printf("\n");
+    }
+
+
+}

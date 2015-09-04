@@ -1,0 +1,120 @@
+#include "objective_real.h"
+#include <time.h>
+int main(int argc, char **argv) {
+  float  x0=-5;
+  int  nx=101;
+  float  dx=1;
+
+  float  z0=-3;
+  int  nz=101;
+  float  dz=1;
+
+  int  nxc=7;
+  int nzc=7;
+  float m_ord=-2;
+  int k=3;
+  int p=2;
+  float lam=0.0;
+
+  float * Obj=(float *)malloc(sizeof(float));
+  float * Obj2=(float *)malloc(sizeof(float));
+  float *Grad=(float *)calloc(nxc*nzc*(2*k-1)*p,sizeof(float));
+  float complex  *Np_b = (float complex *)calloc(nx*nz*(p+1)*p,sizeof(float complex));
+  float complex  *U = (float complex *)calloc(nx*nz,sizeof(float complex));
+  float complex  *QUtest = (float complex *)calloc(nx*nz,sizeof(float complex));
+  float complex  *U2 = (float complex *)calloc(nx*nz,sizeof(float complex));
+   printf("memory allocated for vectors \n");
+  float x,z;
+  srand ( time(NULL) );
+  int m,n;
+  
+  for (m=0;m<nx;m++)
+    {
+      for (n=0;n<nz;n++)
+	{
+	  x=x0+m*dx;
+	  z=z0+n*dz;
+	 
+	  U[m*nz+n]=(-4+4*x*x+4*z*z)*exp(-x*x-z*z)+ 0*I;
+	  QUtest[m*nz+n]=exp(-x*x-z*z)+0*I;
+	  U2[m*nz+n]=x*exp(-x*x-z*z)+0*I;
+	  //printf("%d   ",m*nz+n);
+	}
+    }
+  
+  printf("starting memcopy in test \n");
+  
+  memcpy(&Np_b[0],QUtest,nx*nz*sizeof(float complex));
+
+  memcpy(&Np_b[nx*nz],U,nx*nz*sizeof(float complex));
+  
+  if(p>1){
+  memcpy(&Np_b[2*nx*nz],U2,nx*nz*sizeof(float complex));
+  memcpy(&Np_b[3*nx*nz],U2,nx*nz*sizeof(float complex));
+  memcpy(&Np_b[4*nx*nz],QUtest,nx*nz*sizeof(float complex));
+  memcpy(&Np_b[5*nx*nz],U,nx*nz*sizeof(float complex));
+  }
+ 
+ 
+  float * coeff_c = (float *)malloc(nxc*nzc*(2*k-1)*p*sizeof(float));
+
+ 
+
+ 
+  for(m=0;m<nxc*nzc*(2*k-1)*p;m++)
+    {
+      coeff_c[m]=(float)rand()/RAND_MAX;//printf("%f \n",coeff_c[m]);
+      // coeff_c[m]=(float)sin(m);
+    }
+  
+  objective_real_p(Np_b,coeff_c, nxc, nzc,  k,p, x0, nx,  dx, z0, nz, dz,  m_ord, Obj,Grad,1,lam);
+  printf("safely here \n");
+  float * diff= (float *)malloc(nxc*nzc*(2*k-1)*p*sizeof(float));
+  float h = 1e-3;
+  printf("Objective = %f \n",Obj[0]);
+
+  for (m=0;m<nxc*nzc*(2*k-1)*p;m++)
+    {
+
+   coeff_c[m]=coeff_c[m]+h;
+  objective_real_p(Np_b, coeff_c, nxc, nzc,  k,p, x0, nx,  dx, z0, nz, dz,  m_ord, Obj2,Grad,0,lam);
+  diff[m]=(Obj2[0]-Obj[0])/h;
+  coeff_c[m] = coeff_c[m]-h;
+    }
+
+  float error = 0.0;
+  float norm_grad = 0.0;
+  float min_grad = Grad[0]*Grad[0];
+  int index=0;
+for (m=0;m<nxc*nzc*(2*k-1)*p;m++)
+    {
+      printf("%d",m); printf("  Diff %f",diff[m]);printf("  Grad %f",Grad[m]);printf("  Error %f\n",Grad[m]-diff[m]);
+      error = error + (diff[m]-Grad[m])*(diff[m]-Grad[m]);
+      norm_grad=norm_grad+Grad[m]*Grad[m];
+      if(Grad[m]*Grad[m] < min_grad)
+	{
+	  min_grad = Grad[m]*Grad[m];
+	  index=m;
+	}
+      
+    }
+ FILE * f_grad;
+ f_grad=fopen("./grad.H@","w");
+ fwrite(Grad, sizeof(float), nxc*nzc*(2*k-1)*p, f_grad);
+ fclose(f_grad);
+
+ FILE * f_diff;
+ f_diff=fopen("./diff.H@","w");
+ fwrite(diff, sizeof(float), nxc*nzc*(2*k-1)*p, f_diff);
+ fclose(f_diff);
+
+ printf("Relative error between finite difference and gradient= %f \n",pow(error/norm_grad,0.5));
+ printf("Norm Grad = %f \n",pow(norm_grad,0.5));
+ printf("Min Grad  = %f \n", pow(min_grad,0.5));
+ printf("At index= %d \n",index);
+ printf("Finite difference at min = %f \n",diff[index]);
+
+ 
+
+ free(QUtest);free(Np_b);free(U);free(QUtest);free(U2);
+}

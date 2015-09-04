@@ -1,0 +1,132 @@
+
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <iostream>
+#include <algorithm>
+#include <complex.h>
+#include "fftw3.h"
+using namespace std;
+
+extern "C" { 
+
+  void bicubic_(float& , float& , int& ,
+		float&, float& , int&, 
+		float*,
+		float& , float& , int& , 
+		float& , float&, int&, 
+		float*,
+		int&, float*,
+		int&, int&);
+}
+
+extern "C" { 
+
+  void bicubicadj_(float& , float& , int& ,
+		   float&, float& , int&, 
+		   float*,
+		   float& , float& , int& , 
+		   float& , float&, int&, 
+		   float*,
+		   int&, float*,
+		   int&, int&);
+}
+
+
+int main(int argc, char **argv) {
+
+  float x1in=-5;
+  float dxin=1;
+  int nxin=11;
+
+  float y1in=-5;
+  float dyin=1;
+  int nyin=11;
+
+  float * datain = (float *)malloc(nxin*nyin*sizeof(float));
+
+  int m,n;
+  float x,y;
+
+  for (m=0;m<nxin;m++)
+    {
+      for (n=0;n<nyin;n++)
+	{
+	  x=x1in+m*dxin;
+	  y=y1in+n*dyin;
+
+	  datain[n+m*nyin]=y*y;
+	}
+    }
+
+  float x1out=-5;
+  float dxout=0.5;
+  int nxout=21;
+
+  float y1out=-5;
+  float dyout=0.5;
+  int nyout=21;
+
+  float * zout = (float *)malloc(nxout*nyout*sizeof(float));
+
+  
+  // float zout[nxout][nyout];
+  for (m=0;m<nxout;m++)
+    {
+      for (n=0;n<nyout;n++)
+	{
+	  x=x1in+m*dxin;
+	  y=y1in+n*dyin;
+
+	  // zout[m][n]=1.0;
+	  zout[n+m*nyout]=1.0;
+	}
+    }
+  
+  int iend=1;
+
+  float * work;
+  float * work2;
+  //int wl=6*nxout*nyout + 6*nxin*nyin;
+
+  int wl = nxin*nyin+max(nxin,nyin)+max(nyin,nxout)+max(4*nyin-8,4*nxin-3);
+
+  // int wl2 = max(nxin,nyin)+max(nxout,nyout)+ max(7*nxout-8+nxin,7*nyout-8+nyin)+nxout*nyin;
+
+  int wl2 = max(nxout,nyout)+max(nxin,nyin)+ max(7*nxin-8+nxout,7*nyin-8+nyout)+nxin*nyout;
+
+  work = (float *)malloc(wl *sizeof(float));
+  work2 = (float *)malloc(wl2 *sizeof(float));
+  printf("before \n");
+  int ierr =0; 
+  
+  for( m=0;m<nxin;m++)
+    {
+      for(n=0;n<nyin;n++)
+	{
+	  printf("%3.3f ",datain[n+m*nyin]);printf("   ");
+	}
+      printf("\n");
+    }
+  
+
+  bicubic_( x1in, dxin, nxin,y1in, dyin,  nyin, datain, x1out, dxout, nxout, y1out, dyout, nyout , zout,iend, work, wl, ierr);
+
+  //   bicubicadj_( x1out, dxout, nxout,y1out, dyout,  nyout, zout, x1in, dxin, nxin, y1in, dyin, nyin , datain,iend, work2, wl2, ierr);
+   
+  printf("after \n");
+  for( m=0;m<nxout;m++)
+    {
+      for(n=0;n<nyout;n++)
+	{
+	  printf("%3.3f ",zout[n+m*nyout]);printf("   ");
+	}
+      printf("\n");
+    }
+   
+  
+  printf("flag %d \n",ierr);
+
+  free(work);free(work2);free(datain);free(zout);
+
+}

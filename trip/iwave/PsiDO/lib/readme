@@ -1,0 +1,46 @@
+
+	this directory contains all of my spline
+	programs.
+
+	the 1-D spline and adjoint not using the
+	workspace vector are located in:
+
+		cubic.f
+		cubicadj.f
+
+	the 1-D spline and adjoint using the 
+	workspace vector are located in:
+
+		cubicw.f
+		cubicadjw.f
+
+	the 2-D spline and adjoint not using
+	the workspace vector are located in:
+
+		bicubic.f 
+		bicubicadj.f
+	
+	the bicubic program calls:
+
+		svalues.f
+		cubic.f
+	
+	the bicubicadj program calls:
+
+		cubictrans.f
+
+	the 2-D spline and adjoint using the
+	workspace vector are located in:
+
+		bicubicw.f 
+		bicubicadjw.f
+
+	bicubicw calls
+
+		cubicw.f
+		svaluesw.f
+
+	bicubicadjw calls
+
+		cubictransw.f
+

@@ -1,0 +1,655 @@
+#include "cubicfo.hh"
+
+extern "C" void cubic_(float & oin, float & din, float * datain, int & nin,
+		       float & oout, float & dout, float * dataout, int & nout, 
+		       int & iend, float * work, int & wl, int & ier);
+
+extern "C" void cubicadj_(float & oin, float & din, float * datain, int & nin,
+			  float & oout, float & dout, float * dataout, int & nout, 
+			  int & iend, float * work, int & wl, int & ier);
+
+extern "C" void bicubic_(float & o0in, float & d0in, int & n0in,
+			 float & o1in, float & d1in, int & n1in, 
+			 float * datain,
+			 float & o0out, float & d0out, int & n0out, 
+			 float & o1out, float & d1out, int & n1out, 
+			 float * dataout,
+			 int & iend, float * work,
+			 int & wl, int & ier);
+
+extern "C" void bicubicadj_(float & o0in, float & d0in, int & n0in,
+			    float & o1in, float & d1in, int & n1in, 
+			    float * datain,
+			    float & o0out, float & d0out, int & n0out, 
+			    float & o1out, float & d1out, int & n1out, 
+			    float * dataout,
+			    int & iend, float * work,
+			    int & wl, int & ier);
+
+namespace RVLGrid {
+
+  using RVL::BinaryLocalFunctionObject;
+  using RVL::RVLException;
+  
+  void CubicFwdInterp::cubic_interp(float & oin, float & din, float const * datain, int & nin,
+				    float & oout, float & dout, float * dataout, int & nout, 
+				    int & iend, float * work, int & wl, int & ier) {
+    cubic_(oin,din,(float *)datain,nin,oout,dout,dataout,nout,iend,work,wl,ier);
+  }
+
+  void CubicAdjInterp::cubicadj_interp(float & oin, float & din, float const * datain, int & nin,
+				       float & oout, float & dout, float * dataout, int & nout, 
+				       int & iend, float * work, int & wl, int & ier) {
+    cubicadj_(oin,din,(float *)datain,nin,oout,dout,dataout,nout,iend,work,wl,ier);
+  }
+
+  void BiCubicFwdInterp::bicubic_interp(float & o0in, float & d0in, int & n0in,
+					float & o1in, float & d1in, int & n1in, 
+					float const * datain,
+					float & o0out, float & d0out, int & n0out, 
+					float & o1out, float & d1out, int & n1out, 
+					float * dataout,
+					int & iend, float * work,
+					int & wl, int & ier) {
+    bicubic_(o0in,d0in,n0in,o1in,d1in,n1in,(float *)datain,
+	     o0out,d0out,n0out,o1out,d1out,n1out,dataout,
+	     iend,work,wl,ier);
+  }
+
+  void BiCubicAdjInterp::bicubicadj_interp(float & o0in, float & d0in, int & n0in,
+					   float & o1in, float & d1in, int & n1in, 
+					   float const * datain,
+					   float & o0out, float & d0out, int & n0out, 
+					   float & o1out, float & d1out, int & n1out, 
+					   float * dataout,
+					   int & iend, float * work,
+					   int & wl, int & ier) {
+    bicubicadj_(o0in,d0in,n0in,o1in,d1in,n1in,(float *)datain,
+		o0out,d0out,n0out,o1out,d1out,n1out,dataout,
+		iend,work,wl,ier);
+  }
+
+  void TriCubicFwdInterp::cubic_interp(float & oin, float & din, float const * datain, int & nin,
+				       float & oout, float & dout, float * dataout, int & nout, 
+				       int & iend, float * work, int & wl, int & ier) {
+    cubic_(oin,din,(float *)datain,nin,oout,dout,dataout,nout,iend,work,wl,ier);
+  }
+
+  void TriCubicAdjInterp::cubicadj_interp(float & oin, float & din, float const * datain, int & nin,
+					  float & oout, float & dout, float * dataout, int & nout, 
+					  int & iend, float * work, int & wl, int & ier) {
+    cubicadj_(oin,din,(float *)datain,nin,oout,dout,dataout,nout,iend,work,wl,ier);
+  }
+
+  void TriCubicFwdInterp::bicubic_interp(float & o0in, float & d0in, int & n0in,
+					 float & o1in, float & d1in, int & n1in, 
+					 float const * datain,
+					 float & o0out, float & d0out, int & n0out, 
+					 float & o1out, float & d1out, int & n1out, 
+					 float * dataout,
+					 int & iend, float * work,
+					 int & wl, int & ier) {
+    bicubic_(o0in,d0in,n0in,o1in,d1in,n1in,(float *)datain,
+	     o0out,d0out,n0out,o1out,d1out,n1out,dataout,
+	     iend,work,wl,ier);
+  }
+
+  void TriCubicAdjInterp::bicubicadj_interp(float & o0in, float & d0in, int & n0in,
+					    float & o1in, float & d1in, int & n1in, 
+					    float const * datain,
+					    float & o0out, float & d0out, int & n0out, 
+					    float & o1out, float & d1out, int & n1out, 
+					    float * dataout,
+					    int & iend, float * work,
+					    int & wl, int & ier) {
+    bicubicadj_(o0in,d0in,n0in,o1in,d1in,n1in,(float *)datain,
+		o0out,d0out,n0out,o1out,d1out,n1out,dataout,
+		iend,work,wl,ier);
+  }
+
+  void CubicFwdInterp::operator() (LocalDataContainer<float> & dcout,
+				   LocalDataContainer<float> const & dcin) {
+    int ier = 0;
+    int iend = 1; // linear ends
+    if( (work)&&(nin==dcin.getSize())&&(nout == dcout.getSize())) {
+      cubic_interp(oin,din,dcin.getData(),nin,
+		   oout,dout,dcout.getData(),nout,
+		   iend,work,wl,ier);
+    } else
+      try {
+	
+	GridData const & gin  = dynamic_cast<GridData const &>(dcin);
+	GridData & gout = dynamic_cast<GridData &>(dcout);
+	Grid const & gridin   = gin.getMetadata();
+	Grid const & gridout  = gout.getMetadata();
+	
+	if (gridin == gridout) {
+	  RVLCopy<float> cp;
+	  cp(dcout,dcin);
+	  return;
+	}
+	
+	nin   = gridin.getData()[0].n;
+	oin   = gridin.getData()[0].o;
+	din   = gridin.getData()[0].d;
+	
+	nout  = gridout.getData()[0].n;
+	oout  = gridout.getData()[0].o;
+	dout  = gridout.getData()[0].d;
+	
+	wl = 4*nin;
+	work = new float[wl];
+	
+	cubic_interp(oin,din,dcin.getData(),nin,
+		     oout,dout,dcout.getData(),nout,
+		     iend,work,wl,ier);
+	
+	delete [] work;
+	work = NULL;
+	wl = 0;
+      }
+      catch (bad_cast) {
+	RVLException e; e<<"Error: CubicFwdInterp::operator()\n";
+	e<<"either input or output LocalDataContainer\n";
+	e<<"is not a GridData object\n";
+	e<<"input:\n";
+	dcin.write(e);
+	e<<"output:\n";
+	dcout.write(e);
+	throw e;
+      }
+
+    if (ier) {
+      RVLException e; e<<"Error: CubicFwdInterp::operator() from cubic\n";
+      e<<"ier = "<<ier<<"\n";
+      throw e;
+    }
+
+  }
+
+  void CubicAdjInterp::operator() (LocalDataContainer<float> & dcout,
+				   LocalDataContainer<float> const & dcin)  {
+    int ier = 0;
+    int iend = 1; // linear ends
+    if( (work)&&(nin==dcin.getSize())&&(nout == dcout.getSize())) {
+      cubicadj_interp(oin,din,dcin.getData(),nin,
+		      oout,dout,dcout.getData(),nout,
+		      iend,work,wl,ier);
+    } else
+      try {
+
+	GridData const & gin  = dynamic_cast<GridData const &>(dcin);
+	GridData & gout = dynamic_cast<GridData &>(dcout);
+	Grid const & gridin   = gin.getMetadata();
+	Grid const & gridout  = gout.getMetadata();
+	
+	if (gridin == gridout) {
+	  RVLCopy<float> cp;
+	  cp(dcout,dcin);
+	  return;
+	}
+	
+	nin   = gridin.getData()[0].n;
+	oin   = gridin.getData()[0].o;
+	din   = gridin.getData()[0].d;
+	
+	nout  = gridout.getData()[0].n;
+	oout  = gridout.getData()[0].o;
+	dout  = gridout.getData()[0].d;
+	
+	wl = 8*nin+8*nout;
+	work = new float[wl];
+	
+	cubicadj_interp(oin,din,dcin.getData(),nin,
+			oout,dout,dcout.getData(),nout,
+			iend,work,wl,ier);
+	
+	delete [] work;
+	work = NULL;
+	wl = 0;
+      }
+      catch (bad_cast) {
+	RVLException e; e<<"Error: CubicFwdInterp::operator()\n";
+	e<<"either input or output LocalDataContainer\n";
+	e<<"is not a GridData object\n";
+	e<<"input:\n";
+	dcin.write(e);
+	e<<"output:\n";
+	dcout.write(e);
+	throw e;
+      }
+
+    if (ier) {
+      RVLException e; e<<"Error: CubicFwdInterp::operator() from cubic\n";
+      e<<"ier = "<<ier<<"\n";
+      throw e;
+    }
+
+  }
+
+  void BiCubicFwdInterp::operator() (LocalDataContainer<float> & dout,
+				     LocalDataContainer<float> const & din) {
+
+    try {
+
+      GridData const & gin  = dynamic_cast<GridData const &>(din);
+      GridData & gout = dynamic_cast<GridData &>(dout);
+      Grid const & gridin   = gin.getMetadata();
+      Grid const & gridout  = gout.getMetadata();
+
+      if (gridin == gridout) {
+	RVLCopy<float> cp;
+	cp(dout,din);
+	return;
+      }
+
+      int ier = 0;
+      int iend = 1; // linear ends
+
+      int n0in     = gridin.getData()[0].n;
+      int n1in     = gridin.getData()[1].n;
+      float o0in   = gridin.getData()[0].o;
+      float o1in   = gridin.getData()[1].o;
+      float d0in   = gridin.getData()[0].d;
+      float d1in   = gridin.getData()[1].d;
+
+      int n0out    = gridout.getData()[0].n;
+      int n1out    = gridout.getData()[1].n;
+      float o0out  = gridout.getData()[0].o;
+      float o1out  = gridout.getData()[1].o;
+      float d0out  = gridout.getData()[0].d;
+      float d1out  = gridout.getData()[1].d;
+
+      /*
+	cerr<<"n0in = "<<n0in<<" n1in = "<<n1in<<endl;
+	cerr<<"d0in = "<<d0in<<" d1in = "<<d1in<<endl;
+	cerr<<"o0in = "<<o0in<<" o1in = "<<o1in<<endl;
+	cerr<<"n0out = "<<n0out<<" n1out = "<<n1out<<endl;
+	cerr<<"d0out = "<<d0out<<" d1out = "<<d1out<<endl;
+	cerr<<"o0out = "<<o0out<<" o1out = "<<o1out<<endl;
+      */
+      int wl = 5*n0in*n1in + 5*max(n0in,n1in) + max(n1in,n0out);
+      float * work = new float[wl];
+
+      bicubic_interp(o0in,d0in,n0in,o1in,d1in,n1in,gin.getData(),
+		     o0out,d0out,n0out,o1out,d1out,n1out,gout.getData(),iend,work,
+		     wl,ier);
+
+      delete [] work;
+
+      if (ier) {
+	RVLException e; e<<"Error: BiCubicFwdInterp::operator() from bicubic\n";
+	e<<"ier = "<<ier<<"\n";
+	throw e;
+      }
+    }
+    catch (bad_cast) {
+      RVLException e; e<<"Error: BiCubicFwdInterp::operator()\n";
+      e<<"either input or output LocalDataContainer\n";
+      e<<"is not a GridData object\n";
+      e<<"input:\n";
+      din.write(e);
+      e<<"output:\n";
+      dout.write(e);
+      throw e;
+    }
+  }
+
+  void BiCubicAdjInterp::operator() (LocalDataContainer<float> & dout,
+				     LocalDataContainer<float> const & din) {
+
+    try {
+      GridData const & gin  = dynamic_cast<GridData const &>(din);
+      GridData & gout = dynamic_cast<GridData &>(dout);
+      Grid const & gridin   = gin.getMetadata();
+      Grid const & gridout  = gout.getMetadata();
+
+      if (gridin == gridout) {
+	RVLCopy<float> cp;
+	cp(dout,din);
+	return;
+      }
+
+      int ier = 0;
+      int iend = 1; // linear ends
+
+      int n0in     = gridin.getData()[0].n;
+      int n1in     = gridin.getData()[1].n;
+      float o0in   = gridin.getData()[0].o;
+      float o1in   = gridin.getData()[1].o;
+      float d0in   = gridin.getData()[0].d;
+      float d1in   = gridin.getData()[1].d;
+
+      int n0out    = gridout.getData()[0].n;
+      int n1out    = gridout.getData()[1].n;
+      float o0out  = gridout.getData()[0].o;
+      float o1out  = gridout.getData()[1].o;
+      float d0out  = gridout.getData()[0].d;
+      float d1out  = gridout.getData()[1].d;
+
+      int wl = n0out*n1in + 10*max(n0in,n1in) + 10*max(n1out,n0out);
+      float * work = new float[wl];
+
+      bicubicadj_interp(o0in,d0in,n0in,o1in,d1in,n1in,gin.getData(),
+			o0out,d0out,n0out,o1out,d1out,n1out,gout.getData(),iend,work,
+			wl,ier);
+
+      delete [] work;
+
+      if (ier) {
+	RVLException e; e<<"Error: BiCubicAdjInterp::operator() from bicubic\n";
+	e<<"ier = "<<ier<<"\n";
+	throw e;
+      }
+      // scaling done in fortran
+
+      if (rn) {
+	float scale;
+	//      cerr<<"grid0 vol = "<<d0out*d1out<<endl;
+	//      cerr<<"grid1 vol = "<<d0in*d1in<<endl;
+	//
+	float tmp=1.0;
+	if (ProtectedDivision<float>(tmp,d0in*d1in,scale)) {
+	  RVLException e; e<<"Error: BiCubicAdjInterp::operator()\n";
+	  e<<"apparent zerodivide by input volume\n";
+	  e<<"input steps = "<<d0in<<", "<<d1in<<"\n";
+	  throw e;
+	}
+	//      cerr<<"ratio = "<<scale<<endl;
+	RVLScale<float> lc(scale);
+	lc(gout);
+      }
+
+    }
+    catch (bad_cast) {
+      RVLException e; e<<"Error: BiCubicAdjInterp::operator()\n";
+      e<<"either input or output LocalDataContainer\n";
+      e<<"is not a GridData object\n";
+      e<<"input:\n";
+      din.write(e);
+      e<<"output:\n";
+      dout.write(e);
+      throw e;
+    }
+  }
+
+  void TriCubicFwdInterp::operator() (LocalDataContainer<float> & dout,
+				      LocalDataContainer<float> const & din) {
+
+    try {
+      GridData const & gin  = dynamic_cast<GridData const &>(din);
+      GridData & gout = dynamic_cast<GridData &>(dout);
+      Grid const & gridin   = gin.getMetadata();
+      Grid const & gridout  = gout.getMetadata();
+  
+      if (gridin == gridout) {
+	RVLCopy<float> cp;
+	cp(dout,din);
+	return;
+      }
+
+      int ier = 0;
+      int iend = 1; // linear ends
+
+      int n0in     = gridin.getData()[0].n;
+      int n1in     = gridin.getData()[1].n;
+      int n2in     = gridin.getData()[2].n;
+      float o0in   = gridin.getData()[0].o;
+      float o1in   = gridin.getData()[1].o;
+      float o2in   = gridin.getData()[2].o;
+      float d0in   = gridin.getData()[0].d;
+      float d1in   = gridin.getData()[1].d;
+      float d2in   = gridin.getData()[2].d;
+
+      int n0out    = gridout.getData()[0].n;
+      int n1out    = gridout.getData()[1].n;
+      int n2out    = gridout.getData()[2].n;
+      float o0out  = gridout.getData()[0].o;
+      float o1out  = gridout.getData()[1].o;
+      float o2out  = gridout.getData()[2].o;
+      float d0out  = gridout.getData()[0].d;
+      float d1out  = gridout.getData()[1].d;
+      float d2out  = gridout.getData()[2].d;
+
+      int wl = 5*n0in*n1in + max(n0in,n1in) + max(n1in,n0out);
+      float * work = new float[wl];
+
+      if (n2in == 1) {
+	if (fabs(o2in-o2out) > 0.1*fabs(d2in)) {
+	  RVLException e; e<<"Error: TriCubicFwdInterp::operator()\n";
+	  e<<"n2 for input = 1 but not same plane - o2s are different\n";
+	  throw e;
+	}
+	if (n2out != 1) {
+	  RVLException e; e<<"Error: TriCubicFwdInterp::operator()\n";
+	  e<<"n2 for input = 1 but n2 for output != 1 - verboten\n";
+	  throw e;
+	}
+	bicubic_interp(o0in,d0in,n0in,o1in,d1in,n1in,gin.getData(),
+		       o0out,d0out,n0out,o1out,d1out,n1out,
+		       gout.getData(),iend,work,
+		       wl,ier);
+    
+	if (ier) {
+	  RVLException e; e<<"Error: TriCubicFwdInterp::operator() from bicubic\n";
+	  e<<"ier = "<<ier<<"\n";
+	  throw e;
+	}
+
+	delete [] work;
+	return;
+      }
+
+      Grid grid1;
+      grid1.initialize(3);
+      grid1.getData()[0].n=n0out; 
+      grid1.getData()[1].n=n1out;
+      grid1.getData()[2].n=n2in;
+      grid1.getData()[0].o=o0out;
+      grid1.getData()[1].o=o1out;
+      grid1.getData()[2].o=o2in;
+      grid1.getData()[0].d=d0out;
+      grid1.getData()[1].d=d1out;
+      grid1.getData()[2].d=d2in;
+      
+      GridData gtmp;
+      gtmp.initialize(grid1);
+
+      for (int i=0;i<n2in;i++) {
+      
+	bicubic_interp(o0in,d0in,n0in,o1in,d1in,n1in,&(gin.getData()[i*n0in*n1in]),
+		       o0out,d0out,n0out,o1out,d1out,n1out,
+		       &(gtmp.getData()[i*n0out*n1out]),iend,work,
+		       wl,ier);
+
+	if (ier) {
+	  RVLException e; e<<"Error: TriCubicFwdInterp::operator() from bicubic\n";
+	  e<<"ier = "<<ier<<"\n";
+	  throw e;
+	}
+
+
+      }
+
+      delete [] work;
+
+      float * worktmp = new float[n2in];
+      float * workout = new float[n2out];
+      wl = 4*n2in;
+      work = new float[wl];
+
+      for (int i=0;i<n0out*n1out;i++) {
+	for (int j=0;j<n2in;j++) {
+	  worktmp[j]=gtmp.getData()[i+j*n0out*n1out];
+	}
+	cubic_interp(o2in,d2in,worktmp,n2in,
+		     o2out,d2out,workout,n2out,
+		     iend,work,wl,ier);
+	if (ier) {
+	  RVLException e; e<<"Error: TriCubicFwdInterp::operator() from bicubic\n";
+	  e<<"ier = "<<ier<<"\n";
+	  throw e;
+	}
+	for (int j=0;j<n2out;j++) {
+	  gout.getData()[i+j*n0out*n1out]=workout[j];
+	}
+      }
+
+      delete [] work;
+      delete [] worktmp;
+      delete [] workout;
+
+    }
+    catch (bad_cast) {
+      RVLException e; e<<"Error: TriCubicFwdInterp::operator()\n";
+      e<<"either input or output LocalDataContainer\n";
+      e<<"is not a GridData object\n";
+      e<<"input:\n";
+      din.write(e);
+      e<<"output:\n";
+      dout.write(e);
+      throw e;
+    }
+  }
+
+  void TriCubicAdjInterp::operator() (LocalDataContainer<float> & dout,
+				      LocalDataContainer<float> const & din) {
+
+    try {
+      GridData const & gin  = dynamic_cast<GridData const &>(din);
+      GridData & gout = dynamic_cast<GridData &>(dout);
+      Grid const & gridin   = gin.getMetadata();
+      Grid const & gridout  = gout.getMetadata();
+
+      if (gridin == gridout) {
+	RVLCopy<float> cp;
+	cp(dout,din);
+	return;
+      }
+
+      int ier = 0;
+      int iend = 1; // linear ends
+
+      int n0in     = gridin.getData()[0].n;
+      int n1in     = gridin.getData()[1].n;
+      int n2in     = gridin.getData()[2].n;
+      float o0in   = gridin.getData()[0].o;
+      float o1in   = gridin.getData()[1].o;
+      float o2in   = gridin.getData()[2].o;
+      float d0in   = gridin.getData()[0].d;
+      float d1in   = gridin.getData()[1].d;
+      float d2in   = gridin.getData()[2].d;
+
+      int n0out    = gridout.getData()[0].n;
+      int n1out    = gridout.getData()[1].n;
+      int n2out    = gridout.getData()[2].n;
+      float o0out  = gridout.getData()[0].o;
+      float o1out  = gridout.getData()[1].o;
+      float o2out  = gridout.getData()[2].o;
+      float d0out  = gridout.getData()[0].d;
+      float d1out  = gridout.getData()[1].d;
+      float d2out  = gridout.getData()[2].d;
+
+      int wl;
+      float * work;
+
+      if (n2in == 1) {
+	if (fabs(o2in-o2out) > 0.1*fabs(d2in)) {
+	  RVLException e; e<<"Error: TriCubicAdjInterp::operator()\n";
+	  e<<"n2 for input = 1 but not same plane - o2s are different\n";
+	  throw e;
+	}
+	if (n2out != 1) {
+	  RVLException e; e<<"Error: TriCubicFwdInterp::operator()\n";
+	  e<<"n2 for input = 1 but n2 for output != 1 - verboten\n";
+	  throw e;
+	}
+
+	wl = n0in*n1in + 10*max(n0in,n1in) + 10*max(n1in,n0out);
+	work = new float[wl];
+	bicubicadj_interp(o0in,d0in,n0in,o1in,d1in,n1in,gin.getData(),
+			  o0out,d0out,n0out,o1out,d1out,n1out,
+			  gout.getData(),iend,work,
+			  wl,ier);
+    
+	if (ier) {
+	  RVLException e; e<<"Error: TriCubicAdjInterp::operator() from bicubic\n";
+	  e<<"ier = "<<ier<<"\n";
+	  throw e;
+	}
+
+	delete [] work;
+	return;
+      }
+
+      Grid grid1;
+      grid1.initialize(3);
+      grid1.getData()[0].n=n0in;
+      grid1.getData()[1].n=n1in;
+      grid1.getData()[2].n=n2out;
+      grid1.getData()[0].o=o0in;
+      grid1.getData()[1].o=o1in;
+      grid1.getData()[2].o=o2out;
+      grid1.getData()[0].d=d0in;
+      grid1.getData()[1].d=d1in;
+      grid1.getData()[2].d=d2out;
+
+      GridData gtmp;
+      gtmp.initialize(grid1);
+
+      float * worktmp = new float[n2out];
+      float * workin = new float[n2in];
+
+      wl = n2in+7*n2out;
+      work = new float[wl];
+
+      for (int i=0;i<n0in*n1in;i++) {
+	for (int j=0;j<n2in;j++) {
+	  workin[j]=gin.getData()[i+j*n0in*n1in];
+	}
+	cubicadj_interp(o2in,d2in,workin,n2in,
+			o2out,d2out,worktmp,n2out,
+			iend,work,wl,ier);
+	if (ier) {
+	  RVLException e; e<<"Error: TriCubicAdjInterp::operator() from cubicadj\n";
+	  e<<"ier = "<<ier<<"\n";
+	  throw e;
+	}
+	for (int j=0;j<n2out;j++) {
+	  gtmp.getData()[i+j*n0in*n1in]=worktmp[j];
+	}
+      }
+
+      delete [] work;
+      delete [] worktmp;
+      delete [] workin;
+
+      wl = n0in*n1in + 10*max(n0in,n1in) + 10*max(n1in,n0out);
+      work = new float[wl];
+      for (int i=0;i<n2out;i++) {
+	bicubicadj_interp(o0in,d0in,n0in,o1in,d1in,n1in,
+			  &(gtmp.getData()[i*n0in*n1in]),
+			  o0out,d0out,n0out,o1out,d1out,n1out,
+			  &(gout.getData()[i*n0out*n1out]),iend,work,
+			  wl,ier);
+	if (ier) {
+	  RVLException e; e<<"Error: TriCubicAdjInterp::operator() from bicubicadj\n";
+	  e<<"ier = "<<ier<<"\n";
+	  throw e;
+	}
+      }
+      delete [] work;
+
+    }
+    catch (bad_cast) {
+      RVLException e; e<<"Error: TriCubicAdjInterp::operator()\n";
+      e<<"either input or output LocalDataContainer\n";
+      e<<"is not a GridData object\n";
+      e<<"input:\n";
+      din.write(e);
+      e<<"output:\n";
+      dout.write(e);
+      throw e;
+    }
+  }
+}

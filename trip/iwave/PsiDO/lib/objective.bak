@@ -1,0 +1,26 @@
+#include "objective.h"
+
+
+void objective(double const *in,double xoin,double dxin ,int M,double zoin,double dzin, int N,int k, double xo,double dx,int nx,double zo,double dz,int nz,double m_ord,double lam, double *obj)
+{
+
+  int m,n,l,i;
+  double *cf_c = (double *) malloc(M*N*sizeof(double));
+  double *cf_f = (double *) malloc(nx*nz*sizeof(double));
+  complex *FQ =(complex *) malloc(nx*nz*k*sizeof(complex));
+
+     for (l=0;l<2*k-1;l++)
+       {
+	 for(m=0;m<nx;m++)
+	   {
+	     for(n=0;n<nz;n++)
+	       {
+		 i=m*nz+n;
+
+		 cf_c[i]=in[l+(2*k-1)*i];
+	       }
+	   }
+
+	 //check for zin the data in
+
+ bicubicd_(&xoin,&dxin,&M,&zoin,&dzin,&N,&xo,&dx ,&nx,&zo,&dz,&nz,cf_f,int *iend,double *work,int *wl,int *ierr);
